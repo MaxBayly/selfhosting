@@ -1,0 +1,24 @@
+---
+version: "2"
+services:
+  piwigo:
+    image: linuxserver/piwigo
+    container_name: piwigo
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Australia/Melbourne
+    volumes:
+      - $HOME/sites/piwigo:/config
+    ports:
+      - 90:80
+#    restart: unless-stopped
+    labels:
+      - traefik.frontend.rule=Host:${PIWIGO_URL}
+      - traefik.backend=piwigo
+      - traefik.docker.network=web
+      - traefik.port=80
+networks:
+  default:
+    external:
+      name: web

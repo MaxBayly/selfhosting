@@ -1,0 +1,26 @@
+---
+version: "2"
+services:
+  heimdall:
+    image: linuxserver/heimdall
+    container_name: heimdall
+    environment:
+      - VIRTUAL_HOST=${HEIMDALL_URL}
+      - PUID=1000
+      - PGID=1000
+      - TZ=Europe/London
+    volumes:
+      - $HOME/sites/heimdall
+    ports:
+      - 81:80
+      - 445:443
+    restart: unless-stopped
+    labels:
+      - traefik.frontend.rule=Host:${HEIMDALL_URL}
+      - traefik.backend=heimdall
+      - traefik.docker.network=web
+      - traefik.port=80
+networks:
+  default:
+    external:
+      name: web

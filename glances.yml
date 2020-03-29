@@ -1,0 +1,33 @@
+version: "3.7"
+
+services:
+  glances:
+    image: nicolargo/glances
+    container_name: glances
+    restart: always
+    pid: host
+    environment:
+      - GLANCES_OPT=-w
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"
+      - "$HOME/glances:/glances/conf"
+      - "$HOME/glances:/shared"
+    network_mode: "host"
+
+  grances-proxy:
+    image: alpine/socat:1.0.3
+    entrypoint: /bin/sh
+    command: >
+      -c "ip -4 route list match 0/0 | awk '{print $$3\" host.docker.internal\"}' >> /etc/hosts
+      && socat tcp-listen:61208,fork,reuseaddr tcp-connect:host.docker.internal:61208"
+    networks:
+      - web
+    labels:
+      - "traefik.enable=true"
+      - "traefik.backend=glances"
+      - "traefik.frontend.rule=Host:${GLANCES_URL}"
+      - "traefik.port=61208"
+      - "traefik.docker.network=web"
+networks:
+  web:
+    external: true

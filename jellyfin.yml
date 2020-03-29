@@ -1,0 +1,32 @@
+---
+version: "2"
+services:
+  jellyfin:
+    image: linuxserver/jellyfin
+    container_name: jellyfin
+#    network_mode: host
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Europe/London
+      - UMASK_SET=022 #optional
+    volumes:
+      - /plex/:/config
+      - /plex/tv:/data/tvshows
+      - /plex/Movies:/data/movies
+#      #- /path for transcoding:/transcode #optional
+    ports:
+      - 8096:8096
+      - 8920:8920 #optional
+    devices:
+      - /dev/dri:/dev/dri #optional
+    restart: unless-stopped
+    labels:
+      - traefik.frontend.rule=Host:${JELLYFIN_URL}
+      - traefik.backend=jellyfin
+      - traefik.docker.network=web
+      - traefik.port=8096
+networks:
+  default:
+    external:
+      name: web
